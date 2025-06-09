@@ -68,10 +68,7 @@ class HypersonicVehicle(NonlinearSDE):
         ψdot  = (a_w / (v * ca.cos(γ)) - (v / r) * ca.cos(γ) * ca.tan(φ) * ca.cos(ψ)
                  - (OMEGA_E**2 * r / (v * ca.cos(γ))) * (ca.sin(φ) * ca.cos(φ) * ca.cos(ψ))
                       + 2 * OMEGA_E * (ca.tan(γ) * ca.cos(φ) * ca.sin(ψ) - ca.sin(φ)))
-        
-        γdot  = (a_n / v
-                 - g_r * ca.cos(γ) / v
-                 + v * ca.cos(γ) / r
+        γdot  = (a_n / v - g_r * ca.cos(γ) / v + v * ca.cos(γ) / r
                  + (OMEGA_E**2 * r / v) * ca.cos(φ)
                    * (ca.cos(γ) * ca.cos(φ) + ca.sin(γ) * ca.sin(φ) * ca.sin(ψ))
                  + 2 * OMEGA_E * ca.cos(ψ) * ca.cos(φ))
