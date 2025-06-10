@@ -22,8 +22,8 @@ x0_mean = np.array([
 hT = 80_000 * ft2m  # 24 384 m
 vT = 2_500 * ft2m  # 762 m/s
 γT = -5.0 * deg2rad  # −0.08727 rad
-θT = 80.0 * deg2rad
-φT = -30.0 * deg2rad
+θT = 60.0 * deg2rad
+φT = -20.0 * deg2rad
 
 xf_mean = np.array([
     R_E + hT,

@@ -39,7 +39,7 @@ def d_state(x_nd):
 
 
 # === 2. Discretisation parameters =======================================
-N_ocp = 50  # number of shooting intervals
+N_ocp = 100  # number of shooting intervals
 K_RUNG = 4  # RK4 sub-steps per interval
 
 
@@ -79,13 +79,13 @@ class NominalOCP:
         #    (fill “free” entries in xf_mean with x0 values for the guess)
         xf_full = x0.copy()
         xf_full[0] = xf_mean[0]  # rf -> given
+        xf_full[1] = xf_mean[1]  # θf -> given
+        xf_full[2] = xf_mean[2]  # φf -> given
         xf_full[3] = xf_mean[3]  # vf -> given
         xf_full[5] = xf_mean[5]  # γf -> given
 
         # now override the “free” entries with your specified endpoints:
-        xf_full[1] = 85.0 * np.pi / 180  # θ final = +85 deg
-        xf_full[2] = -30.0 * np.pi / 180  # φ final = -30 deg
-        xf_full[4] = -80.0 * np.pi / 180  # ψ final = -80 deg
+        xf_full[4] = -45.0 * np.pi / 180  # ψ final = -45 deg
 
         x0_nd = nd_state(x0)
         xf_nd = nd_state(xf_full)
