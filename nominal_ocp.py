@@ -6,7 +6,7 @@ import casadi as ca
 import matplotlib.pyplot as plt
 from scipy.integrate import solve_ivp
 
-from hypersonic import HypersonicVehicle, R_E, MASS
+from hypersonic import HypersonicVehicle, R_E
 from atmosphere  import rho_nominal
 from metrics     import dyn_pressure, heating_poly, normal_load
 
@@ -125,19 +125,25 @@ class NominalOCP:
             self.opti.subject_to(self.X[:,k+1] == x_next)
 
         # ----- path constraints  (evaluate in dimensional variables) ---
-        for k in range(N_ocp+1):
-            x_dim = d_state(self.X[:,k])
+        for k in range(N_ocp + 1):
+            x_dim = d_state(self.X[:, k])
 
             r, _, _, v, _, _ = ca.vertsplit(x_dim)
-            h   = r - R_E
-            ρ   = rho_nominal(h)
-            q   = dyn_pressure(ρ, v)
-            if k == 0:
-                α_k = self.U[1, 0]
+            h = r - R_E
+            ρ = rho_nominal(h)
+            q = dyn_pressure(ρ, v)
+
+            # Under a ZOH assumption, control u_k is applied on
+            # [t_k, t_{k+1}). Pair each state with the control of the
+            # same index, except for the terminal state which uses the
+            # last control input.
+            if k < N_ocp:
+                α_k = self.U[1, k]
             else:
-                α_k = self.U[1, k-1]
-            n   = normal_load(ρ, v, α_k)
-            Λ   = heating_poly(ρ, v, α_k)
+                α_k = self.U[1, -1]
+
+            n = normal_load(ρ, v, α_k)
+            Λ = heating_poly(ρ, v, α_k)
 
             self.opti.subject_to(q <= q_max)
             self.opti.subject_to(Λ <= L_max)
@@ -307,11 +313,22 @@ if __name__ == "__main__":
     Lam   = heating_poly(rho, X_sim[3,:], np.hstack([alpha_init, alpha_init[-1]]))
     n     = normal_load( rho, X_sim[3,:], np.hstack([alpha_init, alpha_init[-1]]))
 
-    fig, axs = plt.subplots(3,1, sharex=True, figsize=(8,9))
-    axs[0].plot(t_min, q);          axs[0].axhline(q_max,        color='r', linestyle='--'); axs[0].set_ylabel("q [Pa]")
-    axs[1].plot(t_min, Lam*factor); axs[1].axhline(Λ_max*factor, color='r', linestyle='--'); axs[1].set_ylabel("Λ [W/m²]")
-    axs[2].plot(t_min, n);          axs[2].axhline(n_max,        color='r', linestyle='--'); axs[2].set_ylabel("n [g]");   axs[2].set_xlabel("Time [min]")
-    for ax in axs: ax.grid(True)
+    fig, axs = plt.subplots(3, 1, sharex=True, figsize=(8, 9))
+    axs[0].plot(t_min, q)
+    axs[0].axhline(q_max, color="r", linestyle="--")
+    axs[0].set_ylabel("q [Pa]")
+
+    axs[1].plot(t_min, Lam * factor)
+    axs[1].axhline(Λ_max * factor, color="r", linestyle="--")
+    axs[1].set_ylabel("Λ [W/m²]")
+
+    axs[2].plot(t_min, n)
+    axs[2].axhline(n_max, color="r", linestyle="--")
+    axs[2].set_ylabel("n [g]")
+    axs[2].set_xlabel("Time [min]")
+
+    for ax in axs:
+        ax.grid(True)
     plt.tight_layout()
     plt.show()
 
@@ -359,8 +376,8 @@ if __name__ == "__main__":
 
     # 2) Plot controls (ZOH, piecewise constant on each interval)
     fig2, ax2 = plt.subplots(figsize=(8, 4))
-    ax2.plot(t[:-1]/60, U[0, :] * 180/np.pi, label='Bank σ')
-    ax2.plot(t[:-1]/60, U[1, :] * 180/np.pi, label='AoA α')
+    ax2.step(t[:-1]/60, U[0, :] * 180/np.pi, where="post", label="Bank σ")
+    ax2.step(t[:-1]/60, U[1, :] * 180/np.pi, where="post", label="AoA α")
     ax2.set_ylabel("Control [deg]")
     ax2.set_xlabel("Time [min]")
     ax2.set_title("Control Profiles (ZOH)")
@@ -371,9 +388,19 @@ if __name__ == "__main__":
     # 3) Plot constraints with limits
     rho = rho_nominal(X[0, :] - R_E)
     q = dyn_pressure(rho, X[3, :])
-    # Λ = heating_simple(rho, X[3, :])
-    Λ = heating_poly(rho[:-1], X[3, :-1],U[1, :])
-    n = normal_load(rho[:-1], X[3, :-1], U[1, :])
+
+    # Under ZOH, control U[:,k] is active on [t_k, t_{k+1}). Attach the
+    # control of the same index to each state, except that the final
+    # state uses the last control input.
+    Λ = np.zeros(len(t))
+    n = np.zeros(len(t))
+    for k in range(len(t)):
+        if k < len(t) - 1:
+            alpha = U[1, k]
+        else:
+            alpha = U[1, -1]
+        Λ[k] = heating_poly(rho[k], X[3, k], alpha)
+        n[k] = normal_load(rho[k], X[3, k], alpha)
 
     fig3, ax3 = plt.subplots(3, 1, figsize=(8, 10), sharex=True)
 
@@ -383,13 +410,13 @@ if __name__ == "__main__":
     ax3[0].grid(True)
     ax3[0].legend()
 
-    ax3[1].plot(t[:-1]/60, Λ*factor, label='Λ(t)')
+    ax3[1].plot(t/60, Λ*factor, label='Λ(t)')
     ax3[1].axhline(Λ_max*factor, color='r', linestyle='--', label='Λ_max')
     ax3[1].set_ylabel("Heating Rate [Btu/ft²·s]")
     ax3[1].grid(True)
     ax3[1].legend()
 
-    ax3[2].plot(t[:-1]/60, n, label='n(t)')
+    ax3[2].plot(t/60, n, label='n(t)')
     ax3[2].axhline(n_max, color='r', linestyle='--', label='n_max')
     ax3[2].set_ylabel("Load Factor [g]")
     ax3[2].set_xlabel("Time [min]")
