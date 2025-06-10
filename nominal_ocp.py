@@ -391,8 +391,11 @@ if __name__ == "__main__":
 
     # 2) Plot controls (ZOH, piecewise constant on each interval)
     fig2, ax2 = plt.subplots(figsize=(8, 4))
-    ax2.step(t[:-1] / 60, U[0, :] * 180 / np.pi, where="post", label="Bank σ")
-    ax2.step(t[:-1] / 60, U[1, :] * 180 / np.pi, where="post", label="AoA α")
+    ax2.step(t[:-1] / 60,
+             U[0, :-1] * 180 / np.pi,
+             where="post",
+             label="Bank σ")
+    ax2.step(t[:-1] / 60, U[1, :-1] * 180 / np.pi, where="post", label="AoA α")
     ax2.set_ylabel("Control [deg]")
     ax2.set_xlabel("Time [min]")
     ax2.set_title("Control Profiles (ZOH)")
@@ -446,7 +449,7 @@ if __name__ == "__main__":
     plt.savefig("path_constraints.png", dpi=150, bbox_inches='tight')
     print("✓ Saved path constraints to path_constraints.png")
     plt.close()
-    
+
     print(f"\n🎯 Optimization completed successfully!")
     print(f"   Final time: {Tf:.1f} seconds ({Tf/60:.1f} minutes)")
     print(f"   Solution saved to: shuttle_nominal.npz")
