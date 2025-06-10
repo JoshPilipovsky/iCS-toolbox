@@ -385,7 +385,9 @@ if __name__ == "__main__":
             ax.set_xlabel("Time [min]")
 
     plt.tight_layout()
-    plt.show()
+    plt.savefig("state_trajectories.png", dpi=150, bbox_inches='tight')
+    print("✓ Saved state trajectories to state_trajectories.png")
+    plt.close()
 
     # 2) Plot controls (ZOH, piecewise constant on each interval)
     fig2, ax2 = plt.subplots(figsize=(8, 4))
@@ -397,6 +399,9 @@ if __name__ == "__main__":
     ax2.grid(True)
     ax2.legend()
     plt.tight_layout()
+    plt.savefig("control_profiles.png", dpi=150, bbox_inches='tight')
+    print("✓ Saved control profiles to control_profiles.png")
+    plt.close()
 
     # 3) Plot constraints with limits
     rho = rho_nominal(X[0, :] - R_E)
@@ -438,5 +443,11 @@ if __name__ == "__main__":
 
     fig3.suptitle("Path Constraints vs. Time")
     plt.tight_layout(rect=[0, 0, 1, 0.96])
-
-    plt.show()
+    plt.savefig("path_constraints.png", dpi=150, bbox_inches='tight')
+    print("✓ Saved path constraints to path_constraints.png")
+    plt.close()
+    
+    print(f"\n🎯 Optimization completed successfully!")
+    print(f"   Final time: {Tf:.1f} seconds ({Tf/60:.1f} minutes)")
+    print(f"   Solution saved to: shuttle_nominal.npz")
+    print(f"   Plots saved as PNG files in the current directory")
