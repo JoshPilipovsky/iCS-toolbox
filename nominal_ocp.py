@@ -295,51 +295,60 @@ if __name__ == "__main__":
     alt_kft = alt_m * m2ft / 1000.0
     vel_mps = X_sim[3, :]
     vel_kftps = vel_mps * m2ft / 1000.0
-    # theta_deg = X_sim[1, :] / deg2rad
-    # phi_deg = X_sim[2, :] / deg2rad
-    # psi_deg = X_sim[4, :] / deg2rad
-    # gamma_deg = X_sim[5, :] / deg2rad
-    # t_min = t_sim / 60
+    theta_deg = X_sim[1, :] / deg2rad
+    phi_deg = X_sim[2, :] / deg2rad
+    psi_deg = X_sim[4, :] / deg2rad
+    gamma_deg = X_sim[5, :] / deg2rad
+    t_min = t_sim / 60
 
-    # fig, axs = plt.subplots(3, 2, figsize=(8, 9), sharex=True)
-    # axs = axs.flatten()
-    # series = [alt_kft, theta_deg, phi_deg, vel_kftps, psi_deg, gamma_deg]
-    # labels = [
-    #     "Altitude [kft]", "θ [deg]", "φ [deg]", "Speed [kft/s]", "ψ [deg]",
-    #     "γ [deg]"
-    # ]
+    fig, axs = plt.subplots(3, 2, figsize=(8, 9), sharex=True)
+    axs = axs.flatten()
+    series = [alt_kft, theta_deg, phi_deg, vel_kftps, psi_deg, gamma_deg]
+    labels = [
+        "Altitude [kft]", "θ [deg]", "φ [deg]", "Speed [kft/s]", "ψ [deg]",
+        "γ [deg]"
+    ]
 
-    # for i, ax in enumerate(axs):
-    #     ax.plot(t_min, series[i])
-    #     ax.set_ylabel(labels[i])
-    #     ax.grid(True)
-    #     if i >= 4:  # only bottom row
-    #         ax.set_xlabel("Time [min]")
+    for i, ax in enumerate(axs):
+        ax.plot(t_min, series[i])
+        ax.set_ylabel(labels[i])
+        ax.grid(True)
+        if i >= 4:  # only bottom row
+            ax.set_xlabel("Time [min]")
 
-    # # 2) Path constraints
-    # rho = rho_nominal(X_sim[0, :] - R_E)
-    # q = dyn_pressure(rho, X_sim[3, :])
-    # Lam = heating_poly(rho, X_sim[3, :],
-    #                    np.hstack([alpha_init, alpha_init[-1]]))
-    # n = normal_load(rho, X_sim[3, :], np.hstack([alpha_init, alpha_init[-1]]))
+    plt.tight_layout()
+    plt.savefig("ini_state_trajectories.png", dpi=150, bbox_inches='tight')
+    print("✓ Saved initial guess state trajectories to state_trajectories.png")
+    plt.close()
 
-    # fig, axs = plt.subplots(3, 1, sharex=True, figsize=(8, 9))
-    # axs[0].plot(t_min, q)
-    # axs[0].axhline(q_max, color="r", linestyle="--")
-    # axs[0].set_ylabel("q [Pa]")
+    # 2) Path constraints
+    rho = rho_nominal(X_sim[0, :] - R_E)
+    q = dyn_pressure(rho, X_sim[3, :])
+    Lam = heating_poly(rho, X_sim[3, :],
+                       np.hstack([alpha_init, alpha_init[-1]]))
+    n = normal_load(rho, X_sim[3, :], np.hstack([alpha_init, alpha_init[-1]]))
 
-    # axs[1].plot(t_min, Lam * factor)
-    # axs[1].axhline(Λ_max * factor, color="r", linestyle="--")
-    # axs[1].set_ylabel("Λ [W/m²]")
+    fig, axs = plt.subplots(3, 1, sharex=True, figsize=(8, 9))
+    axs[0].plot(t_min, q)
+    axs[0].axhline(q_max, color="r", linestyle="--")
+    axs[0].set_ylabel("q [Pa]")
 
-    # axs[2].plot(t_min, n)
-    # axs[2].axhline(n_max, color="r", linestyle="--")
-    # axs[2].set_ylabel("n [g]")
-    # axs[2].set_xlabel("Time [min]")
+    axs[1].plot(t_min, Lam * factor)
+    axs[1].axhline(Λ_max * factor, color="r", linestyle="--")
+    axs[1].set_ylabel("Λ [W/m²]")
 
-    # for ax in axs:
-    #     ax.grid(True)
-    # plt.tight_layout()
+    axs[2].plot(t_min, n)
+    axs[2].axhline(n_max, color="r", linestyle="--")
+    axs[2].set_ylabel("n [g]")
+    axs[2].set_xlabel("Time [min]")
+
+    for ax in axs:
+        ax.grid(True)
+    plt.tight_layout()
+
+    plt.savefig("ini_path_constraints.png", dpi=150, bbox_inches='tight')
+    print("✓ Saved initial path constraints to path_constraints.png")
+    plt.close()
     # plt.show()
 
     # -------------------------- #
