@@ -1,0 +1,17 @@
+modules = ["python-3.12"]
+
+[nix]
+channel = "stable-24_05"
+packages = ["cairo", "ffmpeg-full", "freetype", "ghostscript", "gobject-introspection", "gtk3", "libxcrypt", "pkg-config", "qhull", "tcl", "tk", "xsimd"]
+
+[workflows]
+runButton = "Run Nominal OCP"
+
+[[workflows.workflow]]
+name = "Run Nominal OCP"
+author = 43672333
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python nominal_ocp.py"
