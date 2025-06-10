@@ -324,14 +324,16 @@ if __name__ == "__main__":
     # 2) Path constraints
     rho = rho_nominal(X_sim[0, :] - R_E)
     q = dyn_pressure(rho, X_sim[3, :])
+    q_psf = q / 47.8803  # Convert Pa to psf
+    q_max_psf = q_max / 47.8803  # Convert Pa to psf
     Lam = heating_poly(rho, X_sim[3, :],
                        np.hstack([alpha_init, alpha_init[-1]]))
     n = normal_load(rho, X_sim[3, :], np.hstack([alpha_init, alpha_init[-1]]))
 
     fig, axs = plt.subplots(3, 1, sharex=True, figsize=(8, 9))
-    axs[0].plot(t_min, q)
-    axs[0].axhline(q_max, color="r", linestyle="--")
-    axs[0].set_ylabel("q [Pa]")
+    axs[0].plot(t_min, q_psf)
+    axs[0].axhline(q_max_psf, color="r", linestyle="--")
+    axs[0].set_ylabel("q [psf]")
 
     axs[1].plot(t_min, Lam * factor)
     axs[1].axhline(Λ_max * factor, color="r", linestyle="--")
@@ -418,6 +420,8 @@ if __name__ == "__main__":
     # 3) Plot constraints with limits
     rho = rho_nominal(X[0, :] - R_E)
     q = dyn_pressure(rho, X[3, :])
+    q_psf = q / 47.8803  # Convert Pa to psf
+    q_max_psf = q_max / 47.8803  # Convert Pa to psf
 
     # Under ZOH, control U[:,k] is active on [t_k, t_{k+1}). Attach the
     # control of the same index to each state, except that the final
@@ -434,9 +438,9 @@ if __name__ == "__main__":
 
     fig3, ax3 = plt.subplots(3, 1, figsize=(8, 10), sharex=True)
 
-    ax3[0].plot(t / 60, q, label='q(t)')
-    ax3[0].axhline(q_max, color='r', linestyle='--', label='q_max')
-    ax3[0].set_ylabel("q [Pa]")
+    ax3[0].plot(t / 60, q_psf, label='q(t)')
+    ax3[0].axhline(q_max_psf, color='r', linestyle='--', label='q_max')
+    ax3[0].set_ylabel("q [psf]")
     ax3[0].grid(True)
     ax3[0].legend()
 
