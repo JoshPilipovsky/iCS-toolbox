@@ -39,7 +39,7 @@ def d_state(x_nd):
 
 
 # === 2. Discretisation parameters =======================================
-N_ocp = 50  # number of shooting intervals
+N_ocp = 100  # number of shooting intervals
 K_RUNG = 4  # RK4 sub-steps per interval
 
 
@@ -139,11 +139,7 @@ class NominalOCP:
             # [t_k, t_{k+1}). Pair each state with the control of the
             # same index, except for the terminal state which uses the
             # last control input.
-            # if k < N_ocp:
             α_k = self.U[1, k]
-            # else:
-            #     α_k = self.U[1, -1]
-
             n = normal_load(ρ, v, α_k)
             Λ = heating_poly(ρ, v, α_k)
 
@@ -152,7 +148,7 @@ class NominalOCP:
             self.opti.subject_to(n <= n_max)
 
         # ----- cost:    J = ∫ ||u||² dt  + w_T * Tf  -------------------
-        wT = 1e-3
+        wT = 1e-1
         integrand = ca.sum2(ca.sum1(self.U**2))
         self.opti.minimize(integrand * dt_nd + wT * self.Tf)
 
@@ -162,14 +158,22 @@ class NominalOCP:
         self.opti.subject_to(self.Tf <= 4000 / t0)
 
         self.opti.subject_to(
-            self.opti.bounded(-np.pi / 2, self.U[0, :],
-                              np.pi / 2))  # α ∈ [−90°,+90°]
+            self.opti.bounded(-80 * np.pi / 180, self.U[0, :],
+                              80 * np.pi / 180))  # α ∈ [−90°,+90°]
         self.opti.subject_to(
-            self.opti.bounded(-np.pi / 2, self.U[1, :], np.pi / 2))
+            self.opti.bounded(-80 * np.pi / 180, self.U[1, :],
+                              80 * np.pi / 180))
 
         # IPOPT options
         p_opts = dict(print_time=True)
-        s_opts = dict(max_iter=5000, print_level=5)
+        s_opts = dict(max_iter=5000,
+                      print_level=5,
+                      tol=1e-8,
+                      constr_viol_tol=1e-8,
+                      dual_inf_tol=1e-8,
+                      mu_strategy='adaptive',
+                      nlp_scaling_method='gradient-based',
+                      linear_solver='ma57')
         self.opti.solver("ipopt", p_opts, s_opts)
 
         # Flags for saving solution
