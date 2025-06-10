@@ -39,7 +39,7 @@ def d_state(x_nd):
 
 
 # === 2. Discretisation parameters =======================================
-N_ocp = 100  # number of shooting intervals
+N_ocp = 50  # number of shooting intervals
 K_RUNG = 4  # RK4 sub-steps per interval
 
 

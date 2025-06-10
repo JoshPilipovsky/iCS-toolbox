@@ -35,6 +35,6 @@ xf_mean = np.array([
 ])
 
 # constraint scalars (literature values, Shuttle-specific)
-q_max = 1000 * 47.8803  # 819 psf ⇒ 3.9 × 10⁴ Pa
+q_max = 819 * 47.8803  # 819 psf ⇒ 3.9 × 10⁴ Pa
 Λ_max = 70 * 1055.06 * 3.28084**2  # 70 Btu/ft²/s ⇒ 7.95 × 10⁵ W/m²
-n_max = 5.0  # Orbiter structural limit
+n_max = 3.0  # Orbiter structural limit
